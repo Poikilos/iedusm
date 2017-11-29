@@ -1,9 +1,9 @@
 @echo off
-REM installutil iedusm.exe
+SET THISNAME=iedusm
+REM installutil %THISNAME%.exe
 SET THIS_PATH=%~dp0
-REM "%THIS_PATH%iedusm.exe" -uninstall
-IF EXIST "%THIS_PATH%\bin\Release\iedusm.exe" "%THIS_PATH%\bin\Release\iedusm.exe" -install
-IF NOT EXIST "%THIS_PATH%\bin\Release\iedusm.exe" "%THIS_PATH%\bin\Debug\iedusm.exe" -install
+IF EXIST "%THIS_PATH%\bin\Release\%THISNAME%.exe" "%THIS_PATH%\bin\Release\%THISNAME%.exe" -install
+IF NOT EXIST "%THIS_PATH%\bin\Release\%THISNAME%.exe" "%THIS_PATH%\bin\Debug\%THISNAME%.exe" -install
 echo Now to go services.msc and do the following:
 echo * change Startup type to "Start automatically"
 echo * in "Log On" tab:

@@ -3,6 +3,7 @@ IntegratorEdu System Management: manage your hardware from your self-hosted Inte
 
 ## Changes
 * (2017-11-29) initial commit
+	* IEdu.cs needs manual references: System.Web.dll, System.Net.dll, System.Net.Http.dll
 	* implement self-install as per https://stackoverflow.com/questions/2072288/installing-windows-service-programmatically
 	* (actual problem was bad syntax) resolve async could not be found
 		* Project settings, compiling, convert to .NET Framework 4.5.1 [4.5.1 is installed in Windows 10 by default]

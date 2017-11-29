@@ -59,6 +59,6 @@ namespace iedu
                 ServicesToRun = new ServiceBase[] { new iedusm() };
                 ServiceBase.Run(ServicesToRun);
             }
-		}
+		}//end  Main
 	}
 }

@@ -30,6 +30,7 @@ namespace iedu
 		public const string MyServiceName = "iedusm"; //IntegratorEdu System Management
 		private static System.Timers.Timer ss_timer = null;
 		private static bool timers_enable = false;
+		Dictionary<string, string> settings = null;
 		//"System.Threading.Timer uses System.Timers.Timer internally" says Tim Robinson from https://stackoverflow.com/questions/246697/best-timer-for-using-in-a-windows-service
 		//"System.Timers.Timer is geared towards multithreaded applications and is therefore thread-safe via its SynchronizationObject property, whereas System.Threading.Timer is ironically not thread-safe out-of-the-box." according to David Andres from https://stackoverflow.com/questions/1416803/system-timers-timer-vs-system-threading-timer
 		public iedusm()
@@ -97,6 +98,37 @@ namespace iedu
 		/// </summary>
 		protected override void OnStart(string[] args)
 		{
+			
+			settings = new Dictionary<string, string>();
+			string settings_path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "iedusm");
+			if (File.Exists(settings_path)) {
+				StreamReader ins = new StreamReader(settings_path);
+				string line;
+				//defaults:
+				while ( (line=ins.ReadLine()) != null ) {
+					string line_trim = line.Trim();
+					if (line_trim.Length>0) {
+						if (!line_trim.StartsWith("#")) {
+							int ao_i = line_trim.IndexOf(":");
+							if (ao_i>-1) {
+								string name = line.Substring(0,ao_i).Trim();
+								string val = line.Substring(ao_i+1).Trim();
+								if (val.Length>1 && val.StartsWith("\"") && val.EndsWith("\"")) {
+									val = val.Substring(1,val.Length-2);
+								}
+								else if (val.Length>1 && val.StartsWith("'") && val.EndsWith("'")) {
+									val = val.Substring(1,val.Length-2);
+								}
+								if (name!="") {
+									if (settings.ContainsKey(name)) settings[name] = val;
+									else settings.Add(name, val);
+								}
+							}
+						}
+					}
+				}
+				ins.Close();
+			}			
 			timers_enable = true;
 			ss_timer = new System.Timers.Timer(debug_enable?5000:30000);  // 10000ms is 10s
 			ss_timer.AutoReset = true;  // loop
@@ -113,7 +145,6 @@ namespace iedu
 		protected override void OnStop()
 		{
 			timers_enable = false;
-			// TODO: Add tear-down code here (if required) to stop your service.
 			ss_timer.Stop();
 			ss_timer = null;
 		}		

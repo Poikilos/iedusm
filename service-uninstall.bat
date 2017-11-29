@@ -1,6 +1,7 @@
 @echo off
-REM installutil iedusm.exe
+SET THISNAME=iedusm
+REM installutil %THISNAME%.exe
 SET THIS_PATH=%~dp0
-IF EXIST "%THIS_PATH%\bin\Release\iedusm.exe" "%THIS_PATH%\bin\Release\iedusm.exe" -uninstall
-IF NOT EXIST "%THIS_PATH%\bin\Release\iedusm.exe" "%THIS_PATH%\bin\Debug\iedusm.exe" -uninstall
+IF EXIST "%THIS_PATH%\bin\Release\%THISNAME%.exe" "%THIS_PATH%\bin\Release\%THISNAME%.exe" -uninstall
+IF NOT EXIST "%THIS_PATH%\bin\Release\%THISNAME%.exe" "%THIS_PATH%\bin\Debug\%THISNAME%.exe" -uninstall
 pause

@@ -14,4 +14,5 @@ echo   * First failure: "Restart the Service"
 echo   * Second failure: "Restart the Service" 
 echo   * "Reset fail count after": 1 days (default is 0)
 echo * OK, right-click the service, Start.
+echo * Add an exception to your anti-virus software for %THISNAME%
 pause

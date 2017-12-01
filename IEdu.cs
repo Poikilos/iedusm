@@ -13,6 +13,7 @@ using System.Net;
 using System.Net.Http;
 using System.Web; //urlencode, HttpUtility etc
 using System.Net.Sockets; //AddressFamily etc
+using System.Runtime.InteropServices; //DllImport etc
 
 namespace iedu
 {
@@ -21,10 +22,37 @@ namespace iedu
 	/// </summary>
 	public class IEdu
 	{
+		/// <summary>
+		/// http://www.pinvoke.net/default.aspx/kernel32.wtsgetactiveconsolesessionid says:
+		/// The WTSGetActiveConsoleSessionId function retrieves the Remote Desktop Services session that
+		/// is currently attached to the physical console. The physical console is the monitor, keyboard, and mouse.
+		/// Note that it is not necessary that Remote Desktop Services be running for this function to succeed.
+		/// </summary>
+		/// <returns>The session identifier of the session that is attached to the physical console. If there is no
+		/// session attached to the physical console, (for example, if the physical console session is in the process
+		/// of being attached or detached), this function returns 0xFFFFFFFF.</returns>
+		[DllImport("Kernel32.dll", SetLastError = true)]
+		[return:MarshalAs(UnmanagedType.U4)]
+		public static extern int WTSGetActiveConsoleSessionId ( );
+		
 		public IEdu()
 		{
 		}
 		
+		public static string foldable_yaml_value(string indent, string val) {
+			string result = null;
+			if (val != null) {
+				val = val.Replace("\r\n", "\n");
+				string[] results = val.Split(new char[] {'\n'});
+				result = "";
+				if (result!=null&results.Length>0) {
+					for (int i=0; i<results.Length; i++) {
+						result += indent + results[i].Trim() + Environment.NewLine;
+					}
+				}
+			}
+			return result;
+		}
 		//by compnamehelper from <https://stackoverflow.com/questions/1444592/determine-clients-computer-name>
 		public static string DetermineHostName(string IP) //formerly DetermineCompName
 		{
@@ -54,14 +82,16 @@ namespace iedu
 		}
 		
 		//based on shanabus' answer from <https://stackoverflow.com/questions/1273998/how-to-submit-http-form-using-c-sharp> edited Oct 27 '15 at 13:15 
-		public static string html_post(string url, Dictionary<string,string> body) {
+		public static string http_send_as_form(string url, string form_method, Dictionary<string,string> body) {
 		
 			string result = "";
-			
+			if (string.IsNullOrWhiteSpace(form_method)) form_method = "POST";
+			else form_method = form_method.ToUpper();
 			string strPost = ""; //"username="+username+"&password="+password+"&firstname="+firstname+"&lastname="+lastname;
 			foreach(KeyValuePair<string, string> entry in body)
 			{
-				strPost += ((strPost=="?")?"":"&") + entry.Key + "=" + HttpUtility.UrlEncode(entry.Value);
+				if (form_method=="GET") strPost += ((strPost=="")?"?":"&") + entry.Key + "=" + HttpUtility.UrlEncode(entry.Value);
+				else strPost += ((strPost=="")?"":"&") + entry.Key + "=" + HttpUtility.UrlEncode(entry.Value);
 			}			
 			StreamWriter myWriter = null;
 			

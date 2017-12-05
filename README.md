@@ -1,5 +1,12 @@
 # iedusm
-Int2
+IntegratorEdu System Management: manage your hardware from your self-hosted IntegratorEdu instance. 
+
+## Compiling
+(this program requires Windows, and is only useful for Windows unless fully reprogrammed with similar features)
+* Open iedusm.sln file in SharpDevelop 5.1 or later (or use .NET 4.0 or later [C# 5.0] command line tools)
+* Build, Set configuration, Release
+* Build, Build Solution
+
 ## Usage:
 1. Setup using batch (right-click install-service, run as Administrator)
 2. Install service object using instructions which are shown by batch file!
@@ -36,6 +43,8 @@ iedusm.exe -uninstall
 
 
 ## Known Issues
+* check IntegratorEdu instance for settings
+	(add route for iedusm to IntegratorEdu project)
 * regularly get config from server (the following variables):
 	* push_interval_ms
 	* pull_interval_ms

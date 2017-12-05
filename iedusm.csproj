@@ -12,6 +12,11 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <TargetFrameworkProfile />
     <NoWin32Manifest>False</NoWin32Manifest>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\PublicPrivateKeyFile.snk</AssemblyOriginatorKeyFile>
+    <DelaySign>False</DelaySign>
+    <AssemblyOriginatorKeyMode>File</AssemblyOriginatorKeyMode>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Platform)' == 'AnyCPU' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -67,13 +72,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IEdu.cs" />
-    <Compile Include="iedusm.cs" />
+    <Compile Include="IEduSM.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="ProjectInstaller.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="app.manifest" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -1,7 +1,28 @@
 # iedusm
-IntegratorEdu System Management: manage your hardware from your self-hosted IntegratorEdu instance.
+Int2
+## Usage:
+1. Setup using batch (right-click install-service, run as Administrator)
+2. Install service object using instructions which are shown by batch file!
+
+### Manual usage:
+* manipulate the software (not part of iedusm) that iedusm manages (to uninstall, detach then delete):
+  ```
+  iedusm.exe -detach_managed_software
+  iedusm.exe -delete_managed_software
+  iedusm.exe -install_managed_software
+  iedusm.exe -update_managed_software
+  ```
+
+### The manual usages below are not recommended:
+```
+iedusm.exe -install
+iedusm.exe -uninstall
+```
 
 ## Changes
+* (2017-12-01) added uiAccess="true" as property of requestedExecutionLevel in manifest, so that service can access GUI elements running at any System integrity level (helps with being able to see UAC prompts) -- see also <https://blogs.msdn.microsoft.com/cjacks/2009/10/15/using-the-uiaccess-attribute-of-requestedexecutionlevel-to-improve-applications-providing-remote-control-of-the-desktop/>
+  ("Project," "Project Options," "Applications" tab, change "Embed default manifest" to "Create..." then edit the file that appears).
+* (2017-12-01) signed assembly (Project Settings, Signing, choose same PublicPrivateKeyFile.snk for all iedu projects) 
 * (2017-11-29) initial commit
 	* IEdu.cs needs manual references: System.Web.dll, System.Net.dll, System.Net.Http.dll
 	* implement self-install as per https://stackoverflow.com/questions/2072288/installing-windows-service-programmatically

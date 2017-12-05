@@ -56,13 +56,13 @@ namespace iedu
                         case "-detach_managed_software":
                             {
 	                    		Console.Error.WriteLine(" but found "+args[0]+" option so continuing with that...");
-	                    		IEduSM.uninstall_services();
+	                    		IEduSM.uninstall_services(false);
 	                    		break;
                     		}
                         case "-delete_managed_software":
                             {
 	                    		Console.Error.WriteLine(" but found "+args[0]+" option so continuing with that...");
-	                    		Console.Error.WriteLine("ERROR: Nothing done ("+args[0]+" is not yet implemented).");//TODO: IEduSM.delete_services();
+	                    		IEduSM.uninstall_services(true);
 	                    		break;
                     		}
                         case "-install_managed_software":

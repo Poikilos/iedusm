@@ -14,6 +14,8 @@ using System.Net.Http;
 using System.Web; //urlencode, HttpUtility etc
 using System.Net.Sockets; //AddressFamily etc
 using System.Runtime.InteropServices; //DllImport etc
+using System.Diagnostics; //Process etc
+
 
 namespace iedu
 {
@@ -142,17 +144,21 @@ namespace iedu
 				Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), s_name),
 				Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), s_name),
 				WOW_mode_enable
-					? (Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles).Substring(programs_len-6), s_name))
+					? (Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles).Substring(0,programs_len-6), s_name))
 					: (Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles)+" (x86)", s_name))
 			};
 		}
 		public static string[] get_software_source_expected_paths(string s_name) {
 			return new string[] {
-				Path.Combine(Path.Combine(documents_path, "GitHub"), s_name),
-				Path.Combine(Path.Combine(profile_path, "GitHub"), s_name),
+				Path.Combine(Path.Combine(Path.Combine(Path.Combine(documents_path, "GitHub"), s_name),"bin"),"Release"),
+				Path.Combine(Path.Combine(Path.Combine(Path.Combine(profile_path, "GitHub"), s_name), "bin"),"Release"),
 				".",
 				Path.Combine(".","dat"), //in case it is in a deepinstall dat folder
-				Path.Combine(Path.Combine(".", "bin"), "Release")
+				Path.Combine(Path.Combine(".", "bin"), "Release"),
+				Path.Combine(Path.Combine(Path.Combine(documents_path, "GitHub"), s_name),"bin"),
+				Path.Combine(Path.Combine(Path.Combine(profile_path, "GitHub"), s_name), "bin"),
+				Path.Combine(Path.Combine(documents_path, "GitHub"), s_name),
+				Path.Combine(Path.Combine(profile_path, "GitHub"), s_name)
 			};
 		}
 		public static string get_software_source_file_path(string s_name) {
@@ -180,6 +186,16 @@ namespace iedu
 			return get_software_path(s_name, return_even_if_doesnt_exist_enable, false, false);
 		}
 		/// <summary>
+		/// * Based on Likurg's answer from <https://stackoverflow.com/questions/10579679/c-sharp-winform-delete-folders-and-files-on-uninstall-permission-error>
+		/// but modified for Console application
+		/// * Assumes program will exit
+		/// </summary>
+		/// <param name="seconds">Assumes self will be exited in this many seconds</param>
+		public static void delete_self(int seconds) {
+			Process.Start("cmd.exe", "timeout "+seconds.ToString()+" > Nul & Del \"" + System.Reflection.Assembly.GetExecutingAssembly().Location + "\"");
+			//assumes program will exit! 
+		}
+		/// <summary>
 		/// 
 		/// </summary>
 		/// <param name="s_name"></param>
@@ -192,7 +208,7 @@ namespace iedu
 			//string projects_path = null;
 			//string project_path = null;
 			string exe_name = s_name+".exe";
-			if (s_name!=null&&s_name.Length>0) {
+			if (s_name!=null&&s_name.Trim().Length>0) {
 				//NOTE: SpecialFolders below (only used for source_mode_enable) are only going to have
 				// install sources in them if user is same user as elevated Administrator.
 				// (if on Windows, they refer to "HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders"
@@ -202,6 +218,7 @@ namespace iedu
 					string program_path = Path.Combine(programs_path, s_name);
 					if (source_mode_enable) result = Path.Combine(Path.Combine(documents_path, "GitHub"), s_name);
 					else result = program_path;
+					if (include_file_path_in_return_enable) result = Path.Combine(result, exe_name);
 				}
 				else {
 					if (source_mode_enable) {
@@ -238,6 +255,17 @@ namespace iedu
 						}
 					}//end else !source_mode_enable
 				}//end else !return_even_if_doesnt_exist_enable
+			}
+			if (result==null) {
+				if (return_even_if_doesnt_exist_enable) throw new ApplicationException("get_software_path failed to get path when "+(include_file_path_in_return_enable?"file":"folder")+" path (even if not existing) was desired (logic error)");
+			}
+			else {
+				if (include_file_path_in_return_enable) {
+					if (!return_even_if_doesnt_exist_enable && !File.Exists(result)) throw new ApplicationException("get_software_path got a file path when that didn't exist when existing file was desired (logic error)");
+				}
+				else {
+					if (!return_even_if_doesnt_exist_enable && !Directory.Exists(result)) throw new ApplicationException("get_software_path got a folder path when that didn't exist when existing file was desired (logic error)");
+				}
 			}
 			return result;
 		}

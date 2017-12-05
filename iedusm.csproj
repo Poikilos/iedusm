@@ -63,6 +63,7 @@
     <Reference Include="System.Management" />
     <Reference Include="System.Net" />
     <Reference Include="System.Net.Http" />
+    <Reference Include="System.ServiceModel.Install" />
     <Reference Include="System.ServiceProcess" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
@@ -72,6 +73,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IEdu.cs" />
+    <Compile Include="IEduServiceInstaller.cs" />
     <Compile Include="IEduSM.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="ProjectInstaller.cs" />

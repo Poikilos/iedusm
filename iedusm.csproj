@@ -73,7 +73,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IEdu.cs" />
-    <Compile Include="IEduServiceInstaller.cs" />
     <Compile Include="IEduSM.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="ProjectInstaller.cs" />

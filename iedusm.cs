@@ -21,7 +21,7 @@ using System.IO;
 //using Microsoft.Bcl.Async;  // doesn't exist
 //using System.ComponentModel.EventBasedAsync;  // doesn't exist
 using System.Configuration.Install;  // ManagedInstallerClass etc
-
+using System.Collections; //ArrayList etc
 
 namespace iedu
 {
@@ -138,24 +138,68 @@ namespace iedu
 							if (destination_file_path!=null) {
 								if (copyfiles_enable) {
 									//already copied files, but now need to install service SINCE they were (updated/added).
-									//NOTE: we are assured by get_service_path that s_path exists
+									//NOTE: get_service_path assures that s_path exists in this case
 									//      (if it was in GitHub folder, install to ProgramFiles was already tried,
 									//      and s_path changed to Program Files*\<s_name>\<s_name>.exe).
 									
-									//see <https://stackoverflow.com/questions/2072288/installing-windows-service-programmatically>:
+									// see <https://docs.microsoft.com/en-us/dotnet/framework/windows-services/walkthrough-creating-a-windows-service-application-in-the-component-designer#code-snippet-1>
+									// via <https://stackoverflow.com/questions/2072288/installing-windows-service-programmatically>:
+									
 									//detach_software(new string[] {s_name});
-									//detach_service(s_path); //already done if existed
+									//detach_service(s_path); //already done if existed0
 									ManagedInstallerClass.InstallHelper(new string[] { destination_file_path});
-									//starting it as per codemonkey from <https://stackoverflow.com/questions/1036713/automatically-start-a-windows-service-on-install>:
-									//results in access denied (same if done manually, unless "Log on as" is changed from LocalService to Local System
+									
+									//Starting it as per codemonkey from <https://stackoverflow.com/questions/1036713/automatically-start-a-windows-service-on-install>:
+									// results in access denied (same if done manually, unless "Log on as" is changed from LocalService to Local System
 									//serviceInstaller
 									//ServiceProcessInstaller serviceProcessInstaller1 = new ServiceProcessInstaller();
 									//serviceProcessInstaller1.Account = System.ServiceProcess.ServiceAccount.LocalSystem;
-									
-									//using (ServiceController sc = new ServiceController("iedusm")) {//using (ServiceController sc = new ServiceController(serviceInstaller.ServiceName))
-										
+									//serviceProcessInstaller1.Installers
+									//using (ServiceController sc = new ServiceController(s_name)) {
+									//	sc.ServiceType = ServiceType.InteractiveProcess;//TODO: is this correct?
 									//	sc.Start();
 									//}
+									// and doesn't have a way to set account, so set in IEduInstaller.cs which inherits from Installer and don't call it manually
+									/*
+									// --below won't work either since Commit is called by install utilities which know the state of the service (but don't need overload since can start it manually)
+									Installer installer;
+									
+									
+									installer = new Installer();
+									ServiceProcessInstaller serviceProcessInstaller = new ServiceProcessInstaller();
+							        serviceProcessInstaller.Account = ServiceAccount.LocalSystem; // Or whatever account you want
+							        ServiceInstaller si = new ServiceInstaller();
+							        si.DelayedAutoStart = true;
+							        si.DisplayName = s_name;
+							        si.Description = s_name;
+							        si.DisplayName = s_name;
+							        //si.HelpText
+							        //si.Installers
+							        //si.Parent //do set since not child
+							        si.ServiceName = s_name;
+							        //si.ServicesDependedOn //do not set since not parent either
+							        //si.Site // I dont' know what this does
+							        si.StartType = ServiceStartMode.Automatic;
+							        
+							        //var serviceInstaller = new ServiceInstaller
+							        //{
+							        //    DisplayName = "Insert the display name here",
+							        //    StartType = ServiceStartMode.Automatic, // Or whatever startup type you want
+							        //    Description = "Insert a description for your service here",
+							        //    ServiceName = "Insert the service name here"
+							        //};
+							        installer.Installers.Add(serviceProcessInstaller);  // why was this _serviceProcessInstaller fre0n?
+							        installer.Installers.Add(si);
+							        installer.Commit();
+							        */
+							       Console.WriteLine("Trying to start service manually...");
+							        ServiceController sc = new ServiceController(s_name);  // using (ServiceController sc = new ServiceController(serviceInstaller.ServiceName))
+									//sc.ServiceType = ServiceType.InteractiveProcess;  // TODO: why is this readonly and should it be changed somehow?
+									sc.Start();
+									
+									
+									//or use IEduPServiceInstaller (see its cs file) based on fre0n's answer from <https://stackoverflow.com/questions/2253051/credentials-when-installing-windows-service/2253140#2253140>:
+									
 								}
 								else {
 									Console.Error.WriteLine("Update for "+s_name+" was not enabled/needed.");
@@ -199,7 +243,9 @@ namespace iedu
 									Thread.Sleep(5000); //wait for iedup.InstallLog to be written
 									//TODO: see <https://stackoverflow.com/questions/10579679/c-sharp-winform-delete-folders-and-files-on-uninstall-permission-error> find out why access is denied in `File.Delete(s_path)` when s_path DOES exist and is detached (NOT "installed as service" anymore) -- service_uninstall_log_path can be deleted but s_path cannot.
 									try {
+										File.SetAttributes(s_path, FileAttributes.Normal);
 										File.Delete(s_path); //true for recursive
+										Directory.Delete(parent_path, true); //true for recursive
 									}
 									catch {
 										Console.Error.WriteLine("File.Delete access to \""+s_path+"\" was denied, trying system's delete command...");
@@ -207,14 +253,42 @@ namespace iedu
 										Thread.Sleep(8);
 										if (File.Exists(s_path)) {
 											Console.WriteLine("Still failed to delete, trying -delete-self option...");
-											Process.Start(s_path, "-delete_self");
+											Process.Start(s_path, "-delete_self"); //NOTE: doesn't run even if running is admin due to "magical" annoying Microsoft permission level for services
+											
 											Thread.Sleep(8);
 											if (File.Exists(s_path)) {
 												Console.WriteLine("WARNING: failed to delete '"+s_path+"'");
+												string this_progdata_path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), names[i]);
+												string this_settings_path = Path.Combine(this_progdata_path, "settings.yml");
+												ArrayList lines = new ArrayList();
+												bool is_found = false;
+												//changing settings assumes target service is not running or will check date of settings file modification
+												try {
+													if (File.Exists(this_settings_path)) {
+														StreamReader ins = new StreamReader(this_settings_path);
+														string line;
+														while ( (line=ins.ReadLine()) != null ) {
+															if (line.StartsWith("delete_self_enable:")) {
+																lines.Add("delete_self_enable: true");
+																is_found=true;
+															}
+															else lines.Add(line);
+														}
+														ins.Close();
+														StreamWriter outs = new StreamWriter(this_settings_path);
+														foreach (string this_line in lines) {
+															outs.WriteLine(this_line);
+														}
+														if (!is_found) outs.WriteLine("delete_self_enable: true");
+														outs.Close();
+													}
+												}
+												catch (Exception exn) {
+													Console.Error.WriteLine(exn.ToString());
+												}
 											}
 										}
 									}
-									Directory.Delete(parent_path, true); //true for recursive
 								}
 							}
 							else Console.Error.WriteLine("WARNING in uninstall_services: "+names[i]+" was already removed.");

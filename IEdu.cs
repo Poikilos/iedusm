@@ -19,6 +19,7 @@ using System.Diagnostics; //Process etc
 
 namespace iedu
 {
+	
 	/// <summary>
 	/// Description of IEdu.
 	/// </summary>
@@ -185,16 +186,14 @@ namespace iedu
 		public static string get_software_destination_folder_path(string s_name, bool return_even_if_doesnt_exist_enable) {
 			return get_software_path(s_name, return_even_if_doesnt_exist_enable, false, false);
 		}
-		/// <summary>
-		/// * Based on Likurg's answer from <https://stackoverflow.com/questions/10579679/c-sharp-winform-delete-folders-and-files-on-uninstall-permission-error>
-		/// but modified for Console application
-		/// * Assumes program will exit
-		/// </summary>
-		/// <param name="seconds">Assumes self will be exited in this many seconds</param>
-		public static void delete_self(int seconds) {
-			Process.Start("cmd.exe", "timeout "+seconds.ToString()+" > Nul & Del \"" + System.Reflection.Assembly.GetExecutingAssembly().Location + "\"");
-			//assumes program will exit! 
+		public static bool is_true(string s) {
+			if (s!=null) {
+				s = s.Trim().ToLower();
+				return (s=="true"||s=="1"||s=="yes"||s=="on");
+			}
+			else return false;
 		}
+		
 		/// <summary>
 		/// 
 		/// </summary>

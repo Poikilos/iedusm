@@ -19,6 +19,7 @@ IntegratorEdu System Management: manage your hardware from your self-hosted Inte
   iedusm.exe -install_managed_software
   iedusm.exe -update_managed_software
   ```
+  
 
 ### The manual usages below are not recommended:
 ```
@@ -43,6 +44,7 @@ iedusm.exe -uninstall
 
 
 ## Known Issues
+* Cannot Start services after install via `iedusm.exe -install_managed_software` due to "Access denied" (maybe since uiAccess required--may need to use deepinstall instead)
 * check IntegratorEdu instance for settings
 	(add route for iedusm to IntegratorEdu project)
 * regularly get config from server (the following variables):
